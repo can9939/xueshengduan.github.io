@@ -1,0 +1,386 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>飞友航空教育-学生端</title>
+    <style>
+        *{margin:0;padding:0;box-sizing:border-box;font-family:"微软雅黑",sans-serif;}
+        body{background:#f0f7ff;}
+        .hide{display:none !important;}
+        .container{width:100%;min-height:100vh;}
+
+        /* 登录注册通用样式 */
+        .login-box{width:460px;margin:80px auto;background:#fff;padding:35px;border-radius:12px;box-shadow:0 4px 15px #c5d8f0;}
+        .login-box h2{text-align:center;color:#0f4c81;margin-bottom:25px;}
+        .input-item{margin:15px 0;}
+        .input-item label{display:block;margin-bottom:6px;color:#333;}
+        .input-item input,.input-item select{width:100%;height:44px;padding:0 12px;border:1px solid #ccc;border-radius:6px;font-size:15px;}
+        .btn{width:100%;height:45px;background:#1967d2;color:#fff;border:none;border-radius:6px;font-size:16px;cursor:pointer;margin-top:10px;}
+        .btn:hover{background:#1557b0;}
+        .switch-text{text-align:center;margin-top:15px;color:#1967d2;cursor:pointer;}
+        .tip-text{color:#666;font-size:13px;margin:5px 0;}
+
+        /* 弹窗提示 */
+        .pop-mask{position:fixed;top:0;left:0;width:100%;height:100%;background:rgba(0,0,0,0.5);display:flex;align-items:center;justify-content:center;z-index:999;}
+        .pop-win{background:#fff;padding:30px;border-radius:10px;text-align:center;}
+        .pop-win h3{margin-bottom:20px;}
+        .pop-btn{padding:8px 25px;background:#1967d2;color:#fff;border:none;border-radius:5px;cursor:pointer;}
+
+        /* 主页布局 */
+        .main-header{background:#1967d2;color:#fff;padding:15px 20px;display:flex;justify-content:space-between;align-items:center;}
+        .nav-bar{display:flex;background:#e8f0fe;}
+        .nav-item{padding:12px 20px;cursor:pointer;border-right:1px solid #d0dcec;}
+        .nav-item.active{background:#1967d2;color:#fff;}
+        .main-content{padding:20px;}
+        .content-box{background:#fff;padding:20px;border-radius:8px;margin-bottom:20px;}
+
+        /* 飞机介绍样式 */
+        .plane-card{padding:10px;border:1px solid #eee;border-radius:6px;margin:8px 0;}
+        .plane-card h4{color:#0f4c81;}
+
+        /* 错误页面 */
+        .error-page{text-align:center;padding:100px;}
+    </style>
+</head>
+<body>
+<div class="container" id="app">
+    <!-- 登录页面 -->
+    <div class="login-page" id="loginPage">
+        <div class="login-box">
+            <h2>飞友航空教育 学生登录</h2>
+            <div class="input-item">
+                <label>选择所属校区</label>
+                <select id="loginSchool">
+                    <option value="柳州市飞友小学总部">柳州市飞友小学总部</option>
+                    <option value="广东白云机场分部">广东白云机场分部</option>
+                </select>
+            </div>
+            <div class="input-item">
+                <label>QQ邮箱账号</label>
+                <input type="email" id="loginEmail" placeholder="请输入QQ邮箱">
+            </div>
+            <div class="input-item">
+                <label>登录验证码</label>
+                <input type="text" id="loginCode" placeholder="输入验证码">
+            </div>
+            <div class="input-item">
+                <label>入场编码(FY开头)</label>
+                <input type="text" id="loginEnterCode" placeholder="例：FY0001">
+                <p class="tip-text">仅限FY开头，全校上限3000人</p>
+            </div>
+            <button class="btn" onclick="stuLogin()">立即登录</button>
+            <div class="switch-text" onclick="toRegister()">没有账号？前往注册</div>
+            <div class="switch-text" onclick="toForgetPwd()">忘记密码</div>
+        </div>
+    </div>
+
+    <!-- 注册页面 -->
+    <div class="register-page hide" id="registerPage">
+        <div class="login-box">
+            <h2>学生账号注册</h2>
+            <div class="input-item">
+                <label>选择所属校区</label>
+                <select id="regSchool">
+                    <option value="柳州市飞友小学总部">柳州市飞友小学总部</option>
+                    <option value="广东白云机场分部">广东白云机场分部</option>
+                </select>
+            </div>
+            <div class="input-item">
+                <label>注册QQ邮箱</label>
+                <input type="email" id="regEmail" placeholder="仅支持QQ邮箱">
+            </div>
+            <div class="input-item">
+                <label>设置登录密码</label>
+                <input type="password" id="regPwd" placeholder="设置密码">
+            </div>
+            <div class="input-item">
+                <label>注册验证码</label>
+                <input type="text" id="regCode" placeholder="输入验证码">
+            </div>
+            <div class="input-item">
+                <label>入场编码(FY开头)</label>
+                <input type="text" id="regEnterCode" placeholder="FY+数字">
+            </div>
+            <button class="btn" onclick="stuRegister()">完成注册</button>
+            <div class="switch-text" onclick="toLogin()">已有账号？返回登录</div>
+        </div>
+    </div>
+
+    <!-- 忘记密码页面 -->
+    <div class="forget-page hide" id="forgetPage">
+        <div class="login-box">
+            <h2>找回登录密码</h2>
+            <div class="input-item">
+                <label>绑定QQ邮箱</label>
+                <input type="email" id="forgetEmail" placeholder="输入注册QQ邮箱">
+            </div>
+            <div class="input-item">
+                <label>验证验证码</label>
+                <input type="text" id="forgetCode" placeholder="输入验证码">
+            </div>
+            <div class="input-item">
+                <label>设置新密码</label>
+                <input type="password" id="newPwd" placeholder="输入新密码">
+            </div>
+            <button class="btn" onclick="resetPwd()">确认重置密码</button>
+            <div class="switch-text" onclick="toLogin()">返回登录</div>
+        </div>
+    </div>
+
+    <!-- 验证码错误页面 -->
+    <div class="error-page hide" id="errorCodePage">
+        <h2>验证码输入错误</h2>
+        <p style="margin:20px 0;">验证失败，无法继续操作，请核对正确验证码</p>
+        <button class="btn" style="width:200px;margin:0 auto;" onclick="backLogin()">返回登录页</button>
+    </div>
+
+    <!-- 学生主页 -->
+    <div class="stu-main hide" id="stuMain">
+        <div class="main-header">
+            <h3>飞友航空学生学习中心</h3>
+            <div>
+                <span id="nowSchool">当前校区：</span>
+                <button style="margin-left:15px;padding:5px 10px;border:none;border-radius:4px;cursor:pointer;background:#fff;color:#1967d2;" onclick="switchSchoolBox()">切换校区</button>
+                <button style="margin-left:10px;padding:5px 10px;border:none;border-radius:4px;cursor:pointer;background:#fff;color:red;" onclick="logoutAccount()">退出登录</button>
+                <button style="margin-left:10px;padding:5px 10px;border:none;border-radius:4px;cursor:pointer;background:#fff;color:#666;" onclick="cancelAccount()">注销账号</button>
+            </div>
+        </div>
+        <!-- 仅保留：日常打卡、航空知识、飞机介绍 -->
+        <div class="nav-bar">
+            <div class="nav-item active" onclick="changeNav(0)">日常打卡</div>
+            <div class="nav-item" onclick="changeNav(1)">航空知识趣闻</div>
+            <div class="nav-item" onclick="changeNav(2)">飞机介绍单</div>
+        </div>
+        <div class="main-content">
+            <!-- 1.日常打卡 -->
+            <div class="content-page" id="page0">
+                <div class="content-box">
+                    <h3>学生每日学习打卡</h3>
+                    <p style="margin:15px 0;">每日完成学习即可打卡，记录学习出勤状态</p>
+                    <button class="btn" style="width:200px;" onclick="stuSignIn()">立即今日打卡</button>
+                    <p id="signTip" style="margin-top:10px;color:#666;"></p>
+                </div>
+            </div>
+
+            <!-- 2.航空知识趣闻 -->
+            <div class="content-page hide" id="page1">
+                <div class="content-box">
+                    <h3>航空知识趣闻大全</h3>
+                    <p style="line-height:1.8;margin-top:10px;">
+                    1.民航客机优先选择平流层飞行，气流平稳舒适度极高<br>
+                    2.飞机逆风起飞距离更短，安全性更高<br>
+                    3.空中交通管制统一调配所有航线，避免飞行相撞<br>
+                    4.绝大多数客机无法在空中长时间倒飞飞行<br>
+                    5.飞机黑匣子可完整记录飞行数据与驾驶舱语音
+                    </p>
+                </div>
+            </div>
+
+            <!-- 3.飞机介绍单 -->
+            <div class="content-page hide" id="page2">
+                <div class="content-box">
+                    <h3>全球各类飞机详细介绍</h3>
+                    <div class="plane-card">
+                        <h4>国产客机</h4>
+                        <p>C919国产大型干线客机、ARJ21国产支线客机、新舟60客运飞机</p>
+                    </div>
+                    <div class="plane-card">
+                        <h4>欧洲空客系列</h4>
+                        <p>A320neo、A330、A350远程宽体、A380双层巨型客机</p>
+                    </div>
+                    <div class="plane-card">
+                        <h4>美国波音客机</h4>
+                        <p>B737全系、B747空中女王、B777远程客机、B787梦想客机</p>
+                    </div>
+                    <div class="plane-card">
+                        <h4>支线小型客机</h4>
+                        <p>巴西E系列、加拿大CRJ系列、麦道MD82、MD90客运飞机</p>
+                    </div>
+                    <div class="plane-card">
+                        <h4>大型货运飞机</h4>
+                        <p>波音747货机、安124重型运输机、运20国产大运、空客A330货机</p>
+                    </div>
+                    <div class="plane-card">
+                        <h4>通用通航飞机</h4>
+                        <p>塞斯纳172、钻石系列、轻型运动飞机、航拍作业飞机</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- 登录成功弹窗 -->
+    <div class="pop-mask hide" id="loginSuccessPop">
+        <div class="pop-win">
+            <h3>登录成功！已进入学生学习端</h3>
+            <button class="pop-btn" onclick="closeLoginPop()">确定</button>
+        </div>
+    </div>
+
+    <!-- 切换校区弹窗 -->
+    <div class="pop-mask hide" id="changeSchoolPop">
+        <div class="pop-win">
+            <h3>切换就读校区</h3>
+            <select id="changeSchoolSel" style="padding:8px;margin:15px 0;">
+                <option value="柳州市飞友小学总部">柳州市飞友小学总部</option>
+                <option value="广东白云机场分部">广东白云机场分部</option>
+            </select>
+            <br>
+            <button class="pop-btn" onclick="confirmChangeSchool()">确认切换</button>
+        </div>
+    </div>
+</div>
+
+<script>
+// 全局固定配置 和教师端完全一致
+const RIGHT_CODE = "9113";
+const MAX_PEOPLE = 3000;
+let nowUserSchool = "";
+let hasSign = false;
+
+// 页面切换
+function toLogin(){
+    document.getElementById("loginPage").classList.remove("hide");
+    document.getElementById("registerPage").classList.add("hide");
+    document.getElementById("forgetPage").classList.add("hide");
+}
+function toRegister(){
+    document.getElementById("loginPage").classList.add("hide");
+    document.getElementById("registerPage").classList.remove("hide");
+}
+function toForgetPwd(){
+    document.getElementById("loginPage").classList.add("hide");
+    document.getElementById("forgetPage").classList.remove("hide");
+}
+function backLogin(){
+    document.getElementById("errorCodePage").classList.add("hide");
+    toLogin();
+}
+
+// 学生登录
+function stuLogin(){
+    let email = document.getElementById("loginEmail").value.trim();
+    let code = document.getElementById("loginCode").value.trim();
+    let enterCode = document.getElementById("loginEnterCode").value.trim();
+    let school = document.getElementById("loginSchool").value;
+
+    // 仅QQ邮箱
+    if(!email.endsWith("@qq.com")){
+        alert("仅支持QQ邮箱登录！");
+        return;
+    }
+    // 入场编码校验
+    if(!enterCode.startsWith("FY")){
+        alert("入场编码必须以FY开头！");
+        return;
+    }
+    // 验证码错误跳转错误页
+    if(code !== RIGHT_CODE){
+        document.getElementById("loginPage").classList.add("hide");
+        document.getElementById("errorCodePage").classList.remove("hide");
+        return;
+    }
+    nowUserSchool = school;
+    document.getElementById("nowSchool").innerText = "当前校区："+nowUserSchool;
+    document.getElementById("loginPage").classList.add("hide");
+    document.getElementById("stuMain").classList.remove("hide");
+    document.getElementById("loginSuccessPop").classList.remove("hide");
+}
+
+// 学生注册
+function stuRegister(){
+    let email = document.getElementById("regEmail").value.trim();
+    let pwd = document.getElementById("regPwd").value.trim();
+    let code = document.getElementById("regCode").value.trim();
+    let enterCode = document.getElementById("regEnterCode").value.trim();
+
+    if(!email.endsWith("@qq.com")){
+        alert("仅可使用QQ邮箱注册！");
+        return;
+    }
+    if(!enterCode.startsWith("FY")){
+        alert("入场编码必须FY开头！");
+        return;
+    }
+    if(code !== RIGHT_CODE){
+        document.getElementById("registerPage").classList.add("hide");
+        document.getElementById("errorCodePage").classList.remove("hide");
+        return;
+    }
+    alert("学生账号注册成功，请前往登录！");
+    toLogin();
+}
+
+// 重置密码
+function resetPwd(){
+    let email = document.getElementById("forgetEmail").value.trim();
+    let code = document.getElementById("forgetCode").value.trim();
+    if(!email.endsWith("@qq.com")){
+        alert("请输入注册QQ邮箱！");
+        return;
+    }
+    if(code !== RIGHT_CODE){
+        document.getElementById("forgetPage").classList.add("hide");
+        document.getElementById("errorCodePage").classList.remove("hide");
+        return;
+    }
+    alert("密码重置成功，返回登录！");
+    toLogin();
+}
+
+// 关闭登录成功弹窗
+function closeLoginPop(){
+    document.getElementById("loginSuccessPop").classList.add("hide");
+}
+
+// 导航切换
+function changeNav(index){
+    document.querySelectorAll(".nav-item").forEach((item,i)=>{
+        item.classList.toggle("active",i===index);
+    });
+    document.querySelectorAll(".content-page").forEach((item,i)=>{
+        item.classList.toggle("hide",i!==index);
+    });
+}
+
+// 切换校区
+function switchSchoolBox(){
+    document.getElementById("changeSchoolPop").classList.remove("hide");
+}
+function confirmChangeSchool(){
+    nowUserSchool = document.getElementById("changeSchoolSel").value;
+    document.getElementById("nowSchool").innerText = "当前校区："+nowUserSchool;
+    document.getElementById("changeSchoolPop").classList.add("hide");
+    alert("校区切换完成！");
+}
+
+// 学生打卡功能
+function stuSignIn(){
+    if(hasSign){
+        document.getElementById("signTip").innerText = "今日已经完成打卡，请勿重复打卡！";
+        return;
+    }
+    hasSign = true;
+    document.getElementById("signTip").innerText = "打卡成功！今日学习出勤已记录";
+}
+
+// 退出登录
+function logoutAccount(){
+    if(confirm("确定退出当前学生账号吗？")){
+        document.getElementById("stuMain").classList.add("hide");
+        toLogin();
+        alert("已记录退出账号记录");
+    }
+}
+// 注销账号
+function cancelAccount(){
+    if(confirm("确认永久注销当前学生账号？所有学习数据清空！")){
+        document.getElementById("stuMain").classList.add("hide");
+        toLogin();
+        alert("已记录账号注销记录，账号注销成功");
+    }
+}
+</script>
+</body>
+</html>
